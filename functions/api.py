@@ -11,17 +11,22 @@ def handler(event, context):
             'Access-Control-Allow-Headers': 'Content-Type',
             'Content-Type': 'application/json'
         }
+
+        # Print current directory and list files for debugging
+        current_dir = os.getcwd()
+        files = os.listdir(current_dir)
         
-        # Get the jerseys.json file path
-        json_path = 'jerseys.json'  # File should be in the publish directory
-        
-        # Check if file exists
+        # Try to find jerseys.json in current directory or parent
+        json_path = 'jerseys.json'
+        if not os.path.exists(json_path):
+            json_path = os.path.join('..', 'jerseys.json')
+            
         if not os.path.exists(json_path):
             return {
                 'statusCode': 404,
                 'headers': headers,
                 'body': json.dumps({
-                    'error': 'No jerseys data found. Please ensure jerseys.json exists.'
+                    'error': f'No jerseys data found. Current directory: {current_dir}, Files found: {files}'
                 })
             }
             
@@ -34,8 +39,8 @@ def handler(event, context):
             'jerseys': [{
                 'name': jersey['title'],
                 'url': jersey['url'],
-                'images': [f'/.netlify/functions/proxy-image?url={quote(img)}' for img in jersey['images']],
-                'thumbnail': f'/.netlify/functions/proxy-image?url={quote(jersey["thumbnail"])}',
+                'images': jersey['images'],  # Temporarily return direct URLs for testing
+                'thumbnail': jersey['thumbnail'],  # Temporarily return direct URL for testing
                 'description': jersey['description']
             } for jersey in data['jerseys']]
         }
@@ -47,6 +52,8 @@ def handler(event, context):
         }
         
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
         return {
             'statusCode': 500,
             'headers': {
@@ -54,6 +61,7 @@ def handler(event, context):
                 'Access-Control-Allow-Origin': '*'
             },
             'body': json.dumps({
-                'error': f'Error loading gallery: {str(e)}'
+                'error': f'Error loading gallery: {str(e)}',
+                'details': error_details
             })
         } 
