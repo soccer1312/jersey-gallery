@@ -60,30 +60,14 @@ def get_gallery():
         with open('jerseys.json', 'r', encoding='utf-8') as f:
             data = json.load(f)
             
-        # Extract categories from jersey titles
-        categories = set()
-        for jersey in data['jerseys']:
-            title = jersey['title']
-            # Add main categories based on jersey titles
-            if 'Retro' in title:
-                categories.add('Retro')
-            if any(team in title for team in ['Manchester', 'Inter Milan', 'Celtic', 'Ajax', 'Bayern']):
-                categories.add('Club Teams')
-            if 'Special Edition' in title or 'Concept Edition' in title:
-                categories.add('Special Editions')
-            if 'KIDS' in title:
-                categories.add('Kids')
-            
         # Transform data for frontend and proxy the images
         gallery_data = {
-            'categories': [{'name': cat} for cat in sorted(categories)],
             'jerseys': [{
                 'name': jersey['title'],
                 'url': jersey['url'],
                 'images': [f'/proxy/image?url={requests.utils.quote(img)}' for img in jersey['images']],
                 'thumbnail': f'/proxy/image?url={requests.utils.quote(jersey["thumbnail"])}',
-                'description': jersey['description'],
-                'category': next((cat for cat in categories if cat in jersey['title']), 'Other')
+                'description': jersey['description']
             } for jersey in data['jerseys']]
         }
             

@@ -20,30 +20,23 @@ body {
             margin: 0;
             font-size: 2em;
         }
-        .categories {
-            display: flex;
-            gap: 10px;
-            padding: 10px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 20px;
+            padding: 0 20px;
         }
-        .category {
-            padding: 8px 16px;
-            background: #f0f0f0;
-            border-radius: 20px;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            transition: all 0.3s ease;
         }
-        .category:hover {
-            background: #e0e0e0;
-        }
-        .category.active {
-            background: #2196F3;
-            color: white;
+        .search-input:focus {
+            border-color: #2196F3;
+            box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
         }
         .gallery {
             display: grid;
@@ -169,7 +162,10 @@ body {
         <h1>Jersey Gallery</h1>
     </div>
     
-    <div id="categories" class="categories"></div>
+    <div class="search-container">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search jerseys by name..." oninput="handleSearch()">
+    </div>
+    
     <div id="loading">Loading jerseys...</div>
     <div id="error"></div>
     <div id="page-info" class="page-info"></div>
@@ -178,19 +174,29 @@ body {
 
     <script>
         let allJerseys = [];
-        let activeCategory = null;
         let currentPage = 1;
         let totalPages = 1;
         const itemsPerPage = 120;
+        let searchQuery = '';
+        
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            currentPage = 1; // Reset to first page when searching
+            filterJerseys();
+        }
         
         function filterJerseys() {
             const gallery = document.getElementById('gallery');
             gallery.innerHTML = '';
             
-            // Filter jerseys by category if needed
-            const filteredJerseys = activeCategory 
-                ? allJerseys.filter(jersey => jersey.category === activeCategory)
-                : allJerseys;
+            // Filter jerseys by search query
+            let filteredJerseys = allJerseys;
+            
+            if (searchQuery) {
+                filteredJerseys = filteredJerseys.filter(jersey => 
+                    jersey.name.toLowerCase().includes(searchQuery)
+                );
+            }
             
             // Calculate pagination
             totalPages = Math.ceil(filteredJerseys.length / itemsPerPage);
@@ -296,17 +302,6 @@ body {
             window.scrollTo(0, 0);
         }
         
-        function setActiveCategory(categoryName) {
-            const categories = document.querySelectorAll('.category');
-            categories.forEach(cat => {
-                cat.classList.toggle('active', cat.textContent === categoryName);
-            });
-            
-            activeCategory = categoryName === activeCategory ? null : categoryName;
-            currentPage = 1; // Reset to first page when changing categories
-            filterJerseys();
-        }
-        
         function updateMainImage(thumbnail, newSrc) {
             const card = thumbnail.closest('.jersey-card');
             const mainImage = card.querySelector('.jersey-main-image');
@@ -322,13 +317,11 @@ body {
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
             const gallery = document.getElementById('gallery');
-            const categoriesDiv = document.getElementById('categories');
             
             try {
                 error.style.display = 'none';
                 loading.style.display = 'block';
                 gallery.innerHTML = '';
-                categoriesDiv.innerHTML = '';
                 
                 const response = await fetch('/api/gallery');
                 const data = await response.json();
@@ -342,17 +335,6 @@ body {
                 
                 // Store jerseys
                 allJerseys = data.jerseys || [];
-                
-                // Setup categories if available
-                if (data.categories && data.categories.length > 0) {
-                    data.categories.forEach(category => {
-                        const categoryBtn = document.createElement('div');
-                        categoryBtn.className = 'category';
-                        categoryBtn.textContent = category.name;
-                        categoryBtn.onclick = () => setActiveCategory(category.name);
-                        categoriesDiv.appendChild(categoryBtn);
-                    });
-                }
                 
                 if (allJerseys.length === 0) {
                     loading.textContent = 'No jerseys found in the gallery.';
