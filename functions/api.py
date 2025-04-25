@@ -1,72 +1,56 @@
+from http.server import BaseHTTPRequestHandler
 import json
 import os
-from http.server import BaseHTTPRequestHandler
+from urllib.parse import parse_qs, quote
 
 def handler(event, context):
     try:
+        # Set up CORS headers
+        headers = {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Content-Type': 'application/json'
+        }
+        
+        # Get the jerseys.json file path relative to the function
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        json_path = os.path.join(os.path.dirname(current_dir), 'jerseys.json')
+        
         # Check if file exists
-        if not os.path.exists('jerseys.json'):
+        if not os.path.exists(json_path):
             return {
                 'statusCode': 404,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
+                'headers': headers,
                 'body': json.dumps({
-                    'error': 'No jerseys data found.'
+                    'error': 'No jerseys data found. Please ensure jerseys.json exists in the root directory.'
                 })
             }
             
-        # Read file in binary mode first to check for BOM
-        with open('jerseys.json', 'rb') as f:
-            content = f.read()
-            # Remove BOM if present
-            if content.startswith(b'\xef\xbb\xbf'):
-                content = content[3:]
-            # Decode to string
-            content = content.decode('utf-8')
+        # Read and parse JSON file
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
             
-        # Parse JSON
-        data = json.loads(content)
-            
-        # Transform data for frontend
+        # Transform data for frontend and proxy the images
         gallery_data = {
             'jerseys': [{
                 'name': jersey['title'],
                 'url': jersey['url'],
-                'images': jersey['images'],
-                'thumbnail': jersey['thumbnail'],
+                'images': [f'/.netlify/functions/proxy-image?url={quote(img)}' for img in jersey['images']],
+                'thumbnail': f'/.netlify/functions/proxy-image?url={quote(jersey["thumbnail"])}',
                 'description': jersey['description']
             } for jersey in data['jerseys']]
         }
             
         return {
             'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
+            'headers': headers,
             'body': json.dumps(gallery_data)
         }
-    except json.JSONDecodeError as e:
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({
-                'error': f'Invalid JSON format: {str(e)}',
-                'location': f'Error at line {e.lineno}, column {e.colno}'
-            })
-        }
+        
     except Exception as e:
         return {
             'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
+            'headers': headers,
             'body': json.dumps({
                 'error': f'Error loading gallery: {str(e)}'
             })

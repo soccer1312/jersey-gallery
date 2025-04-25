@@ -1,7 +1,7 @@
 [build]
-  command = "pip install -r requirements.txt"
+  command = "pip install -r requirements.txt && cd functions && pip install -r requirements.txt"
   publish = "."
-  functions = "netlify/functions"
+  functions = "functions"
 
 [[redirects]]
   from = "/api/*"
@@ -14,7 +14,7 @@
   status = 200
 
 [functions]
-  directory = "netlify/functions"
+  directory = "functions"
 
 [build.environment]
   PYTHON_VERSION = "3.8" 
