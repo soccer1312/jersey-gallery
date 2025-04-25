@@ -323,7 +323,10 @@ body {
                 loading.style.display = 'block';
                 gallery.innerHTML = '';
                 
-                const response = await fetch('/api/gallery');
+                const response = await fetch('/.netlify/functions/api');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
                 
                 if (data.error) {
