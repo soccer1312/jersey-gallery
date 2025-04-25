@@ -15,6 +15,13 @@
 
 [functions]
   directory = "functions"
+  node_bundler = "esbuild"
 
 [build.environment]
-  PYTHON_VERSION = "3.8" 
+  PYTHON_VERSION = "3.8"
+
+[functions."api"]
+  runtime = "python"
+
+[functions."proxy-image"]
+  runtime = "python" 
