@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jersey Gallery</title>
+    <style>
+body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 2em;
+        }
+        .categories {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .category {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .category:hover {
+            background: #e0e0e0;
+        }
+        .category.active {
+            background: #2196F3;
+            color: white;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .page-button {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .page-button:hover {
+            background: #e0e0e0;
+        }
+        .page-button.active {
+            background: #2196F3;
+            color: white;
+        }
+        .page-info {
+            text-align: center;
+            color: #666;
+            margin: 10px 0;
+        }
+        .jersey-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .jersey-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .jersey-main-image {
+            width: 100%;
+            height: 300px;
+            object-fit: contain;
+            background: #f8f8f8;
+            padding: 20px;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        .jersey-thumbnails {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            overflow-x: auto;
+            background: #f8f8f8;
+            scrollbar-width: thin;
+        }
+        .jersey-thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .jersey-thumbnail:hover {
+            border-color: #2196F3;
+        }
+        .jersey-thumbnail.active {
+            border-color: #2196F3;
+        }
+        .jersey-info {
+            padding: 15px;
+        }
+        .jersey-name {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+            color: #333;
+        }
+        .jersey-description {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .jersey-link {
+            display: inline-block;
+            color: #2196F3;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .jersey-link:hover {
+            text-decoration: underline;
+        }
+        #loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+        #error {
+            text-align: center;
+            padding: 20px;
+            color: #ff4444;
+            display: none;
+            background: #fff;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Jersey Gallery</h1>
+    </div>
+    
+    <div id="categories" class="categories"></div>
+    <div id="loading">Loading jerseys...</div>
+    <div id="error"></div>
+    <div id="page-info" class="page-info"></div>
+    <div id="gallery" class="gallery"></div>
+    <div id="pagination" class="pagination"></div>
+
+    <script>
+        let allJerseys = [];
+        let activeCategory = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        const itemsPerPage = 120;
+        
+        function filterJerseys() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            
+            // Filter jerseys by category if needed
+            const filteredJerseys = activeCategory 
+                ? allJerseys.filter(jersey => jersey.category === activeCategory)
+                : allJerseys;
+            
+            // Calculate pagination
+            totalPages = Math.ceil(filteredJerseys.length / itemsPerPage);
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const displayJerseys = filteredJerseys.slice(start, end);
+            
+            // Update page info
+            const pageInfo = document.getElementById('page-info');
+            pageInfo.textContent = `Showing ${start + 1}-${Math.min(end, filteredJerseys.length)} of ${filteredJerseys.length} jerseys`;
+            
+            // Display jerseys
+            displayJerseys.forEach(jersey => {
+                const card = document.createElement('div');
+                card.className = 'jersey-card';
+                
+                const thumbnailsHtml = jersey.images.map((img, index) => `
+                    <img class="jersey-thumbnail ${index === 0 ? 'active' : ''}"
+                         src="${img}"
+                         alt="${jersey.name} view ${index + 1}"
+                         loading="lazy"
+                         onclick="updateMainImage(this, '${img}')"
+                    >
+                `).join('');
+                
+                card.innerHTML = `
+                    <img class="jersey-main-image" 
+                         src="${jersey.thumbnail}" 
+                         alt="${jersey.name}"
+                         loading="lazy"
+                         onclick="window.open(this.src, '_blank')"
+                    >
+                    <div class="jersey-thumbnails">
+                        ${thumbnailsHtml}
+                    </div>
+                    <div class="jersey-info">
+                        <h3 class="jersey-name">${jersey.name}</h3>
+                        <p class="jersey-description">${jersey.description}</p>
+                    </div>
+                `;
+                
+                gallery.appendChild(card);
+            });
+            
+            // Update pagination
+            updatePagination();
+        }
+        
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            // Only show pagination if we have more than one page
+            if (totalPages <= 1) return;
+            
+            // Add previous button
+            if (currentPage > 1) {
+                const prevButton = document.createElement('button');
+                prevButton.className = 'page-button';
+                prevButton.textContent = '←';
+                prevButton.onclick = () => setPage(currentPage - 1);
+                pagination.appendChild(prevButton);
+            }
+            
+            // Add page buttons
+            for (let i = 1; i <= totalPages; i++) {
+                // Show first page, last page, current page, and pages around current
+                if (
+                    i === 1 || 
+                    i === totalPages || 
+                    (i >= currentPage - 2 && i <= currentPage + 2)
+                ) {
+                    const pageButton = document.createElement('button');
+                    pageButton.className = `page-button ${i === currentPage ? 'active' : ''}`;
+                    pageButton.textContent = i;
+                    pageButton.onclick = () => setPage(i);
+                    pagination.appendChild(pageButton);
+                } else if (
+                    i === currentPage - 3 ||
+                    i === currentPage + 3
+                ) {
+                    // Add ellipsis
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    pagination.appendChild(ellipsis);
+                }
+            }
+            
+            // Add next button
+            if (currentPage < totalPages) {
+                const nextButton = document.createElement('button');
+                nextButton.className = 'page-button';
+                nextButton.textContent = '→';
+                nextButton.onclick = () => setPage(currentPage + 1);
+                pagination.appendChild(nextButton);
+            }
+        }
+        
+        function setPage(page) {
+            currentPage = page;
+            filterJerseys();
+            // Scroll to top when changing pages
+            window.scrollTo(0, 0);
+        }
+        
+        function setActiveCategory(categoryName) {
+            const categories = document.querySelectorAll('.category');
+            categories.forEach(cat => {
+                cat.classList.toggle('active', cat.textContent === categoryName);
+            });
+            
+            activeCategory = categoryName === activeCategory ? null : categoryName;
+            currentPage = 1; // Reset to first page when changing categories
+            filterJerseys();
+        }
+        
+        function updateMainImage(thumbnail, newSrc) {
+            const card = thumbnail.closest('.jersey-card');
+            const mainImage = card.querySelector('.jersey-main-image');
+            mainImage.src = newSrc;
+            
+            card.querySelectorAll('.jersey-thumbnail').forEach(thumb => {
+                thumb.classList.remove('active');
+            });
+            thumbnail.classList.add('active');
+        }
+        
+        async function loadGallery() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const gallery = document.getElementById('gallery');
+            const categoriesDiv = document.getElementById('categories');
+            
+            try {
+                error.style.display = 'none';
+                loading.style.display = 'block';
+                gallery.innerHTML = '';
+                categoriesDiv.innerHTML = '';
+                
+                const response = await fetch('/api/gallery');
+                const data = await response.json();
+                
+                if (data.error) {
+                    error.textContent = `Error: ${data.error}`;
+                    error.style.display = 'block';
+                    loading.style.display = 'none';
+                    return;
+                }
+                
+                // Store jerseys
+                allJerseys = data.jerseys || [];
+                
+                // Setup categories if available
+                if (data.categories && data.categories.length > 0) {
+                    data.categories.forEach(category => {
+                        const categoryBtn = document.createElement('div');
+                        categoryBtn.className = 'category';
+                        categoryBtn.textContent = category.name;
+                        categoryBtn.onclick = () => setActiveCategory(category.name);
+                        categoriesDiv.appendChild(categoryBtn);
+                    });
+                }
+                
+                if (allJerseys.length === 0) {
+                    loading.textContent = 'No jerseys found in the gallery.';
+                    return;
+                }
+                
+                // Hide loading and show jerseys
+                loading.style.display = 'none';
+                filterJerseys();
+                
+            } catch (err) {
+                console.error('Error loading gallery:', err);
+                error.textContent = `Error loading gallery: ${err.message}`;
+                error.style.display = 'block';
+                loading.style.display = 'none';
+            }
+        }
+        
+        // Load gallery when page loads
+        document.addEventListener('DOMContentLoaded', loadGallery);
+    </script>
+</body>
+</html>
