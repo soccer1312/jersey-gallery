@@ -1,6 +1,7 @@
 [build]
   command = "pip install -r requirements.txt"
   publish = "."
+  functions = "functions"
 
 [[redirects]]
   from = "/api/*"
@@ -9,4 +10,5 @@
 
 [functions]
   directory = "functions"
-  node_bundler = "esbuild" 
+  node_bundler = "esbuild"
+  external_node_modules = ["flask", "werkzeug", "requests", "beautifulsoup4", "urllib3"] 
