@@ -323,8 +323,7 @@ body {
                 loading.style.display = 'block';
                 gallery.innerHTML = '';
                 
-                // Load jerseys data directly from the JSON file
-                const response = await fetch('jerseys.json');
+                const response = await fetch('/api/gallery');
                 const data = await response.json();
                 
                 if (data.error) {
