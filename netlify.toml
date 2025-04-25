@@ -8,6 +8,11 @@
   to = "/.netlify/functions/api/:splat"
   status = 200
 
+[[redirects]]
+  from = "/proxy/image/*"
+  to = "/.netlify/functions/proxy-image/:splat"
+  status = 200
+
 [functions]
   directory = "netlify/functions"
 

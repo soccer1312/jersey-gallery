@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import os
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, quote
 
 def handler(event, context):
     try:
@@ -22,7 +22,7 @@ def handler(event, context):
                 'statusCode': 404,
                 'headers': headers,
                 'body': json.dumps({
-                    'error': 'No jerseys data found.'
+                    'error': 'No jerseys data found. Please ensure jerseys.json exists in the root directory.'
                 })
             }
             
@@ -30,13 +30,13 @@ def handler(event, context):
         with open(json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
             
-        # Transform data for frontend
+        # Transform data for frontend and proxy the images
         gallery_data = {
             'jerseys': [{
                 'name': jersey['title'],
                 'url': jersey['url'],
-                'images': jersey['images'],
-                'thumbnail': jersey['thumbnail'],
+                'images': [f'/.netlify/functions/proxy-image?url={quote(img)}' for img in jersey['images']],
+                'thumbnail': f'/.netlify/functions/proxy-image?url={quote(jersey["thumbnail"])}',
                 'description': jersey['description']
             } for jersey in data['jerseys']]
         }
