@@ -12,9 +12,10 @@ def handler(event, context):
             'Content-Type': 'application/json'
         }
 
-        # Get the function directory
+        # Get the function directory and shared directory
         function_dir = os.path.dirname(os.path.abspath(__file__))
-        json_path = os.path.join(function_dir, 'jerseys.json')
+        shared_dir = os.path.join(os.path.dirname(function_dir), 'shared')
+        json_path = os.path.join(shared_dir, 'jerseys.json')
         
         if not os.path.exists(json_path):
             return {
