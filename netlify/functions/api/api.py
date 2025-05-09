@@ -12,21 +12,16 @@ def handler(event, context):
             'Content-Type': 'application/json'
         }
 
-        # Print current directory and list files for debugging
-        current_dir = os.getcwd()
-        files = os.listdir(current_dir)
+        # Get the function directory
+        function_dir = os.path.dirname(os.path.abspath(__file__))
+        json_path = os.path.join(function_dir, 'jerseys.json')
         
-        # Try to find jerseys.json in current directory or parent
-        json_path = 'jerseys.json'
-        if not os.path.exists(json_path):
-            json_path = os.path.join('..', 'jerseys.json')
-            
         if not os.path.exists(json_path):
             return {
                 'statusCode': 404,
                 'headers': headers,
                 'body': json.dumps({
-                    'error': f'No jerseys data found. Current directory: {current_dir}, Files found: {files}'
+                    'error': f'No jerseys data found at {json_path}'
                 })
             }
             
@@ -39,8 +34,8 @@ def handler(event, context):
             'jerseys': [{
                 'name': jersey['title'],
                 'url': jersey['url'],
-                'images': jersey['images'],  # Temporarily return direct URLs for testing
-                'thumbnail': jersey['thumbnail'],  # Temporarily return direct URL for testing
+                'images': jersey['images'],
+                'thumbnail': jersey['thumbnail'],
                 'description': jersey['description']
             } for jersey in data['jerseys']]
         }
