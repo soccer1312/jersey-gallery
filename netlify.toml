@@ -20,7 +20,9 @@
 [functions]
   directory = "netlify/functions"
   included_files = [
-    "netlify/functions/shared/jerseys.json"
+    "netlify/functions/shared/**/*",
+    "netlify/functions/api/**/*",
+    "netlify/functions/proxy-image/**/*"
   ]
 
 [build.environment]
@@ -30,13 +32,13 @@
   runtime = "python3.8"
   included_files = [
     "netlify/functions/api/**/*",
-    "netlify/functions/shared/jerseys.json"
+    "netlify/functions/shared/**/*"
   ]
 
 [functions."proxy-image"]
   runtime = "python3.8"
   included_files = [
     "netlify/functions/proxy-image/**/*",
-    "netlify/functions/shared/jerseys.json"
+    "netlify/functions/shared/**/*"
   ]
 
