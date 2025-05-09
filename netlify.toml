@@ -1,12 +1,13 @@
 [build]
   command = """
     pip install -r requirements.txt && \
-    cd netlify/functions/api && pip install -r requirements.txt && cd ../../.. && \
-    cd netlify/functions/proxy-image && pip install -r requirements.txt && cd ../../.. && \
+    mkdir -p netlify/functions/api netlify/functions/proxy-image && \
+    cp netlify/functions/api.py netlify/functions/api/index.py && \
+    cp netlify/functions/proxy-image.py netlify/functions/proxy-image/index.py && \
     cp jerseys.json netlify/functions/api/ && \
     cp jerseys.json netlify/functions/proxy-image/ && \
-    cp netlify/functions/api.py netlify/functions/api/index.py && \
-    cp netlify/functions/proxy-image.py netlify/functions/proxy-image/index.py
+    cd netlify/functions/api && pip install -r requirements.txt && cd ../../.. && \
+    cd netlify/functions/proxy-image && pip install -r requirements.txt && cd ../../..
   """
   publish = "."
   functions = "netlify/functions"
