@@ -21,13 +21,15 @@
 
 [functions]
   directory = "netlify/functions"
-  node_bundler = "esbuild"
+  included_files = ["netlify/functions/**/*"]
 
 [build.environment]
   PYTHON_VERSION = "3.8"
 
 [functions.api]
   runtime = "python3.8"
+  included_files = ["netlify/functions/api/**/*"]
 
 [functions."proxy-image"]
-  runtime = "python3.8" 
+  runtime = "python3.8"
+  included_files = ["netlify/functions/proxy-image/**/*"] 
