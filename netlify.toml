@@ -1,10 +1,8 @@
 [build]
   command = """
     pip install -r requirements.txt && \
-    cp jerseys.json netlify/functions/api/ && \
-    cp jerseys.json netlify/functions/proxy-image/ && \
-    cd netlify/functions/api && pip install -r requirements.txt && cd ../../.. && \
-    cd netlify/functions/proxy-image && pip install -r requirements.txt && cd ../../..
+    pip install -r netlify/functions/api/requirements.txt && \
+    pip install -r netlify/functions/proxy-image/requirements.txt
   """
   publish = "."
   functions = "netlify/functions"
@@ -21,15 +19,24 @@
 
 [functions]
   directory = "netlify/functions"
-  included_files = ["netlify/functions/**/*"]
+  included_files = [
+    "netlify/functions/shared/jerseys.json"
+  ]
 
 [build.environment]
   PYTHON_VERSION = "3.8"
 
 [functions.api]
   runtime = "python3.8"
-  included_files = ["netlify/functions/api/**/*"]
+  included_files = [
+    "netlify/functions/api/**/*",
+    "netlify/functions/shared/jerseys.json"
+  ]
 
 [functions."proxy-image"]
   runtime = "python3.8"
-  included_files = ["netlify/functions/proxy-image/**/*"] 
+  included_files = [
+    "netlify/functions/proxy-image/**/*",
+    "netlify/functions/shared/jerseys.json"
+  ]
+
