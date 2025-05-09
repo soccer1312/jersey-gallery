@@ -19,27 +19,18 @@
 
 [functions]
   directory = "netlify/functions"
-  node_bundler = "esbuild"
   included_files = [
-    "netlify/functions/shared/**/*",
-    "netlify/functions/api/**/*",
-    "netlify/functions/proxy-image/**/*"
+    "netlify/functions/shared/**",
+    "netlify/functions/api/**",
+    "netlify/functions/proxy-image/**"
   ]
 
 [build.environment]
   PYTHON_VERSION = "3.8"
 
 [functions.api]
-  runtime = "python3.8"
-  included_files = [
-    "netlify/functions/api/**/*",
-    "netlify/functions/shared/**/*"
-  ]
+  runtime = "python"
 
 [functions."proxy-image"]
-  runtime = "python3.8"
-  included_files = [
-    "netlify/functions/proxy-image/**/*",
-    "netlify/functions/shared/**/*"
-  ]
+  runtime = "python"
 
