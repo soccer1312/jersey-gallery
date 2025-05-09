@@ -1,9 +1,6 @@
 [build]
   command = """
     pip install -r requirements.txt && \
-    mkdir -p netlify/functions/api netlify/functions/proxy-image && \
-    cp netlify/functions/api.py netlify/functions/api/index.py && \
-    cp netlify/functions/proxy-image.py netlify/functions/proxy-image/index.py && \
     cp jerseys.json netlify/functions/api/ && \
     cp jerseys.json netlify/functions/proxy-image/ && \
     cd netlify/functions/api && pip install -r requirements.txt && cd ../../.. && \
@@ -29,8 +26,8 @@
 [build.environment]
   PYTHON_VERSION = "3.8"
 
-[functions."api"]
-  runtime = "python"
+[functions.api]
+  runtime = "python3.8"
 
 [functions."proxy-image"]
-  runtime = "python" 
+  runtime = "python3.8" 
