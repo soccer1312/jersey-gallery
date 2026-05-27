@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://huahetian.x.yupoo.com"
 OUTPUT_FILE = "jerseys.json"
 
-# Start from page 44 so it rechecks page 44 and then continues
-START_PAGE_OVERRIDE = 44
+# Start override: set to None to start from page 1 (no override)
+START_PAGE_OVERRIDE = None
 
 
 def create_session():
@@ -115,8 +115,8 @@ def get_total_pages(session):
     except Exception as e:
         logger.warning("Could not detect total pages automatically: %s", e)
 
-    logger.warning("Falling back to 68 pages")
-    return 68
+    logger.warning("Falling back to 66 pages")
+    return 66
 
 
 def category_page_urls(page):
