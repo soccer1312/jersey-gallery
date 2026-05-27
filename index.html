@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jersey Gallery</title>
+    <style>
+body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 2em;
+        }
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 20px;
+            padding: 0 20px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .search-input:focus {
+            border-color: #2196F3;
+            box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .page-button {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .page-button:hover {
+            background: #e0e0e0;
+        }
+        .page-button.active {
+            background: #2196F3;
+            color: white;
+        }
+        .page-info {
+            text-align: center;
+            color: #666;
+            margin: 10px 0;
+        }
+        .jersey-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .jersey-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .jersey-main-image {
+            width: 100%;
+            height: 300px;
+            object-fit: contain;
+            background: #f8f8f8;
+            padding: 20px;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        .jersey-thumbnails {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            overflow-x: auto;
+            background: #f8f8f8;
+            scrollbar-width: thin;
+        }
+        .jersey-thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .jersey-thumbnail:hover {
+            border-color: #2196F3;
+        }
+        .jersey-thumbnail.active {
+            border-color: #2196F3;
+        }
+        .jersey-info {
+            padding: 15px;
+        }
+        .jersey-name {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+            color: #333;
+        }
+        .jersey-description {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .jersey-link {
+            display: inline-block;
+            color: #2196F3;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .jersey-link:hover {
+            text-decoration: underline;
+        }
+        #loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+        #error {
+            text-align: center;
+            padding: 20px;
+            color: #ff4444;
+            display: none;
+            background: #fff;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        .video-gallery {
+            max-width: 400px;
+            margin: 0 auto 15px;
+            padding: 0 40px;
+            position: relative;
+            transition: opacity 0.3s ease, max-height 0.3s ease;
+        }
+        .video-gallery.hidden {
+            display: none;
+        }
+        .video-gallery h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+        .video-carousel-wrapper {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        .video-container {
+            display: flex;
+            transition: transform 0.5s ease;
+            gap: 0;
+        }
+        .video-item {
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            flex: 0 0 100%;
+            min-width: 0;
+        }
+        .video-item video {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            background: #000;
+        }
+        .video-item p {
+            padding: 6px;
+            margin: 0;
+            text-align: center;
+            color: #666;
+            font-weight: 500;
+            font-size: 0.75em;
+        }
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .carousel-arrow:hover {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .carousel-arrow.prev {
+            left: 5px;
+        }
+        .carousel-arrow.next {
+            right: 5px;
+        }
+        .carousel-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        @media (max-width: 768px) {
+            .video-gallery {
+                max-width: 300px;
+                padding: 0 35px;
+                margin: 0 auto 10px;
+            }
+            .video-gallery h2 {
+                font-size: 0.9em;
+                margin-bottom: 8px;
+            }
+            .video-item p {
+                padding: 4px;
+                font-size: 0.7em;
+            }
+            .carousel-arrow {
+                width: 30px;
+                height: 30px;
+                font-size: 16px;
+            }
+            .carousel-arrow.prev {
+                left: 2px;
+            }
+            .carousel-arrow.next {
+                right: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Jersey Gallery</h1>
+    </div>
+    
+    <div class="search-container">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search jerseys..." oninput="handleSearch()">
+    </div>
+    
+    <div class="video-gallery">
+        <h2>Jersey Showcase Videos</h2>
+        <div class="video-carousel-wrapper">
+            <button class="carousel-arrow prev" onclick="moveCarousel(-1)">‹</button>
+            <button class="carousel-arrow next" onclick="moveCarousel(1)">›</button>
+            <div class="video-container" id="videoCarousel">
+            <div class="video-item">
+                <video controls>
+                    <source src="videos/pedri barca 8 blue yellow.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <p>25/26 Barcelona Home Player PEDRI #8</p>
+            </div>
+            <div class="video-item">
+                <video controls>
+                    <source src="videos/barca kobe jersey.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <p>25/26 Barcelona Away</p>
+            </div>
+            <div class="video-item">
+                <video controls>
+                    <source src="videos/Man united black yellow.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <p>25/26 Manchester United 3rd Away</p>
+            </div>
+            <div class="video-item">
+                <video controls>
+                    <source src="videos/retro manu ronaldo.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <p>Retro 07/08 Manchester United away</p>
+            </div>
+            <div class="video-item">
+                <video controls>
+                    <source src="videos/blue white real.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <p>25/26 Real Madrid Third Away</p>
+            </div>
+            <div class="video-item">
+                <video controls>
+                    <source src="videos/arsenal.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <p>25/26 Arsenal White</p>
+            </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loading">Loading jerseys...</div>
+    <div id="error"></div>
+    <div id="page-info" class="page-info"></div>
+    <div id="gallery" class="gallery"></div>
+    <div id="pagination" class="pagination"></div>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let searchQuery = '';
+        let debounceTimeout;
+        
+        // Video carousel functionality
+        let currentVideoIndex = 0;
+        let videoCarousel, videoItems, totalVideos;
+        
+        function updateCarousel() {
+            if (!videoCarousel) return;
+            const translateX = -currentVideoIndex * 100;
+            videoCarousel.style.transform = `translateX(${translateX}%)`;
+            
+            // Update arrow states
+            const prevArrow = document.querySelector('.carousel-arrow.prev');
+            const nextArrow = document.querySelector('.carousel-arrow.next');
+            
+            if (prevArrow) prevArrow.disabled = currentVideoIndex === 0;
+            if (nextArrow) nextArrow.disabled = currentVideoIndex === totalVideos - 1;
+        }
+        
+        function moveCarousel(direction) {
+            const newIndex = currentVideoIndex + direction;
+            if (newIndex >= 0 && newIndex < totalVideos) {
+                currentVideoIndex = newIndex;
+                updateCarousel();
+            }
+        }
+        
+        // Initialize carousel on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            videoCarousel = document.getElementById('videoCarousel');
+            videoItems = document.querySelectorAll('.video-item');
+            totalVideos = videoItems.length;
+            updateCarousel();
+        });
+        
+        async function loadJerseys() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const gallery = document.getElementById('gallery');
+            
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            gallery.innerHTML = '';
+            
+            try {
+                const params = new URLSearchParams({
+                    page: currentPage.toString()
+                });
+                
+                if (searchQuery) {
+                    params.append('search', searchQuery);
+                }
+                
+                const response = await fetch(`/.netlify/functions/gallery?${params}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                totalPages = data.total_pages;
+                
+                // Update page info
+                const pageInfo = document.getElementById('page-info');
+                pageInfo.textContent = `Page ${data.current_page} of ${data.total_pages} (${data.total} jerseys total)`;
+                
+                // Display jerseys
+                data.jerseys.forEach(jersey => {
+                    const card = document.createElement('div');
+                    card.className = 'jersey-card';
+                    
+                    // Helper to proxy image URLs
+                    const proxyUrl = (img) => `/.netlify/functions/proxy-image?url=${encodeURIComponent(img)}`;
+                    
+                    const thumbnailsHtml = jersey.images.map((img, index) => `
+                        <img class="jersey-thumbnail ${index === 0 ? 'active' : ''}"
+                             src="${proxyUrl(img)}"
+                             alt="${jersey.title} view ${index + 1}"
+                             loading="lazy"
+                             onclick="updateMainImage(this, '${proxyUrl(img)}')"
+                        >
+                    `).join('');
+                    
+                    card.innerHTML = `
+                        <img class="jersey-main-image" 
+                             src="${proxyUrl(jersey.thumbnail)}" 
+                             alt="${jersey.title}"
+                             loading="lazy"
+                        >
+                        <div class="jersey-thumbnails">
+                            ${thumbnailsHtml}
+                        </div>
+                        <div class="jersey-info">
+                            <h3 class="jersey-name">${jersey.title}</h3>
+                            <p class="jersey-description">${jersey.description || ''}</p>
+                        </div>
+                    `;
+                    
+                    gallery.appendChild(card);
+                });
+                
+                updatePagination();
+                loading.style.display = 'none';
+            } catch (err) {
+                console.error('Error loading jerseys:', err);
+                error.textContent = `Error loading jerseys: ${err.message}`;
+                error.style.display = 'block';
+                loading.style.display = 'none';
+            }
+        }
+        
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            // Previous button
+            if (currentPage > 1) {
+                const prevButton = document.createElement('button');
+                prevButton.className = 'page-button';
+                prevButton.textContent = '← Previous';
+                prevButton.onclick = () => {
+                    currentPage--;
+                    loadJerseys();
+                };
+                pagination.appendChild(prevButton);
+            }
+            
+            // Page numbers
+            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+                const pageButton = document.createElement('button');
+                pageButton.className = `page-button ${i === currentPage ? 'active' : ''}`;
+                pageButton.textContent = i;
+                pageButton.onclick = () => {
+                    currentPage = i;
+                    loadJerseys();
+                };
+                pagination.appendChild(pageButton);
+            }
+            
+            // Next button
+            if (currentPage < totalPages) {
+                const nextButton = document.createElement('button');
+                nextButton.className = 'page-button';
+                nextButton.textContent = 'Next →';
+                nextButton.onclick = () => {
+                    currentPage++;
+                    loadJerseys();
+                };
+                pagination.appendChild(nextButton);
+            }
+        }
+        
+        function updateMainImage(thumbnail, newSrc) {
+            // Update main image
+            const card = thumbnail.closest('.jersey-card');
+            const mainImage = card.querySelector('.jersey-main-image');
+            mainImage.src = newSrc;
+            
+            // Update thumbnail active state
+            const thumbnails = card.querySelectorAll('.jersey-thumbnail');
+            thumbnails.forEach(thumb => thumb.classList.remove('active'));
+            thumbnail.classList.add('active');
+        }
+        
+        function handleSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const videoGallery = document.querySelector('.video-gallery');
+            const inputValue = searchInput.value.trim();
+            
+            // Hide/show video gallery based on search input
+            if (inputValue.length > 0) {
+                videoGallery.classList.add('hidden');
+            } else {
+                videoGallery.classList.remove('hidden');
+            }
+            
+            // Debounce search to avoid too many requests
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                searchQuery = inputValue;
+                currentPage = 1; // Reset to first page when searching
+                loadJerseys();
+            }, 300);
+        }
+        
+        // Initial load
+        loadJerseys();
+    </script>
+</body>
+</html>

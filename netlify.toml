@@ -1,0 +1,41 @@
+[build]
+  command = "npm install"
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/proxy/image/*"
+  to = "/.netlify/functions/proxy-image/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/gallery/*"
+  to = "/.netlify/functions/gallery/:splat"
+  status = 200
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["netlify/functions/shared/**"]
+
+[functions.api]
+  runtime = "python3.8"
+  included_files = [
+    "netlify/functions/api/**/*",
+    "netlify/functions/shared/jerseys.json"
+  ]
+
+[functions."proxy-image"]
+  runtime = "python3.8"
+  included_files = [
+    "netlify/functions/proxy-image/**/*",
+    "netlify/functions/shared/jerseys.json"
+  ]
+
